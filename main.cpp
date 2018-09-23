@@ -20,12 +20,13 @@ int main(int argc, char* argv[])
 //    dosGenerator.pcd_init(argv[1]);
 
     dosGenerator.raw_init();
+
     //set target ip to argv[2]
     dosGenerator.target_ip_=argv[2];
     //set sender ip random
     dosGenerator.sender_ip_.set_rand_ip();
 
-
+    //set ip header
 
 
 
