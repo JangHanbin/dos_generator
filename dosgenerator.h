@@ -14,6 +14,8 @@ class DosGenerator
     struct iphdr iph_;
     struct tcphdr tcph_;
     struct SynOptions syn_options_;
+    //power is while condition variable
+    bool power_ = true;
 
 public:
     DosGenerator();
@@ -32,8 +34,10 @@ public:
     void set_raw_fd(int raw_fd);
 
     bool init_iph(uint32_t src_ip, uint32_t dest_ip);
+    bool init_iph(Ip& src_ip, Ip& dest_ip);
     bool init_tcph(uint16_t src_port, uint16_t dest_port);
     bool set_iph_src(uint32_t &src_ip);
+    void switchPower();
     void generate();
 };
 
