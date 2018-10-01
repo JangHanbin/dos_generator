@@ -2,6 +2,7 @@
 #define DOSGENERATOR_H
 
 #include <sys/socket.h>
+#include <netinet/ip_icmp.h>
 #include "jpcap/jpcaplib.h"
 #include "jpcap/mac.h"
 #include "jpcap/ip.h"
@@ -12,6 +13,8 @@ protected :
     char pcap_error_buf_[PCAP_ERRBUF_SIZE];
     pcap_t* pcd_;
     int raw_fd_;
+
+    struct iphdr iph_;
 
     //power is while condition variable
     bool power_ = true;
@@ -33,27 +36,33 @@ public:
     void set_raw_fd(int raw_fd);
 
     void switchPower();
+
+    bool init_iph(uint32_t src_ip, uint32_t dest_ip);
+    bool init_iph(Ip& src_ip, Ip& dest_ip);
+    bool set_iph_src(uint32_t &src_ip);
+
     //Virtual function set for child class
-    virtual void generate() {};
+    virtual void generate() {}
 
 };
 class SynFlood : public DosGenerator {
 
-    struct iphdr iph_;
     struct tcphdr tcph_;
     struct SynOptions syn_options_;
 
 
 public:
 
-    bool init_iph(uint32_t src_ip, uint32_t dest_ip);
-    bool init_iph(Ip& src_ip, Ip& dest_ip);
+
     bool init_tcph(uint16_t src_port, uint16_t dest_port);
-    bool set_iph_src(uint32_t &src_ip);
     virtual void generate();
 };
 
 class ICMPGen : public DosGenerator {
+    struct iphdr iph_;
+    struct icmphdr icmph_;
+
+public :
 
 };
 #endif // DOSGENERATOR_H

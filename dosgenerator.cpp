@@ -50,7 +50,7 @@ bool DosGenerator::raw_init(int type)
     return true;
 }
 
-bool SynFlood::init_iph(uint32_t src_ip, uint32_t dest_ip)
+bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
 {
     memset(&iph_,0,sizeof(struct iphdr));
 
@@ -70,7 +70,7 @@ bool SynFlood::init_iph(uint32_t src_ip, uint32_t dest_ip)
 
 }
 
-bool SynFlood::init_iph(Ip &src_ip, Ip &dest_ip)
+bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip)
 {
     memset(&iph_,0,sizeof(struct iphdr));
 
@@ -103,7 +103,7 @@ bool SynFlood::init_tcph(uint16_t src_port, uint16_t dest_port)
     return true;
 }
 
-bool SynFlood::set_iph_src(uint32_t &src_ip)
+bool DosGenerator::set_iph_src(uint32_t &src_ip)
 {
     iph_.saddr=htonl(src_ip);
 
