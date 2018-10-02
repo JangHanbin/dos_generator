@@ -14,7 +14,6 @@ int main(int argc, char* argv[])
 
     if(argc != 3) usage();
 
-//    DosGenerator synFlood;
     SynFlood synFlood;
 
 //    init pcd for send packet

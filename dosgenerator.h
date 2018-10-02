@@ -7,6 +7,8 @@
 #include "jpcap/mac.h"
 #include "jpcap/ip.h"
 
+#define ICMP_DATA_LEN 1400
+
 class DosGenerator
 {
 protected :
@@ -50,19 +52,19 @@ class SynFlood : public DosGenerator {
     struct tcphdr tcph_;
     struct SynOptions syn_options_;
 
-
 public:
-
-
     bool init_tcph(uint16_t src_port, uint16_t dest_port);
     virtual void generate();
+
 };
 
-class ICMPGen : public DosGenerator {
-    struct iphdr iph_;
+class IcmpFlood : public DosGenerator {
     struct icmphdr icmph_;
 
 public :
+    bool init_icmph();
+    uint8_t data[ICMP_DATA_LEN];
+    virtual void generate();
 
 };
 #endif // DOSGENERATOR_H

