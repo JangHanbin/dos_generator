@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 
     IcmpFlood icmpFlood;
 
-    icmpFlood.raw_init();
+    icmpFlood.raw_init(IPPROTO_RAW);
 
     icmpFlood.target_ip_= argv[2];
     icmpFlood.sender_ip_ = "192.168.0.7";

