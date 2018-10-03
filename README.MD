@@ -40,5 +40,9 @@ foo@bar:~# ./dos_generator <target ip>
 
 
 
+## Blog
+
+**[Blog](http://blog.dork94.com)**
+
 
 
