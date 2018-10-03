@@ -39,8 +39,8 @@ public:
 
     void switchPower();
 
-    bool init_iph(uint32_t src_ip, uint32_t dest_ip);
-    bool init_iph(Ip& src_ip, Ip& dest_ip);
+    bool init_iph(uint32_t src_ip, uint32_t dest_ip, uint8_t protocol);
+    bool init_iph(Ip& src_ip, Ip& dest_ip, uint8_t protocol);
     bool set_iph_src(uint32_t &src_ip);
 
     //Virtual function set for child class
