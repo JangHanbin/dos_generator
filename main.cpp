@@ -16,15 +16,16 @@ int main(int argc, char* argv[])
 
     IcmpFlood icmpFlood;
 
+
     icmpFlood.raw_init(IPPROTO_RAW);
 
     icmpFlood.target_ip_= argv[2];
-    icmpFlood.sender_ip_ = "192.168.0.7";
+//    icmpFlood.sender_ip_ = "192.168.0.7";
 
     icmpFlood.init_iph(icmpFlood.sender_ip_,icmpFlood.target_ip_,IPPROTO_ICMP);
     icmpFlood.init_icmph();
 
-    icmpFlood.generate();
+//    icmpFlood.generate();
 
     /* Syn Flooding example
     SynFlood synFlood;

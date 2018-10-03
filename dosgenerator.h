@@ -8,6 +8,7 @@
 #include "jpcap/ip.h"
 
 #define ICMP_DATA_LEN 1400
+#define ICMP_SEND_BROADCAST 1
 
 class DosGenerator
 {
@@ -64,7 +65,7 @@ class IcmpFlood : public DosGenerator {
 public :
     bool init_icmph();
     uint8_t data[ICMP_DATA_LEN];
-    virtual void generate();
+    virtual void generate(int flag);
 
 };
 #endif // DOSGENERATOR_H

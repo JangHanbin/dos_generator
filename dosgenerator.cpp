@@ -187,7 +187,7 @@ bool IcmpFlood::init_icmph()
     return true;
 }
 
-void IcmpFlood::generate()
+void IcmpFlood::generate(int flag)
 {
     iph_.tot_len = htons(sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
     //make packet buf
@@ -203,9 +203,15 @@ void IcmpFlood::generate()
     memcpy(packet + sizeof(struct iphdr),&icmph_,sizeof(struct icmphdr));
     memcpy(packet+ sizeof(struct iphdr) + sizeof(struct icmphdr),data,ICMP_DATA_LEN);
 
-    //set socket for send broadcast
-    int broadcast = 1;
-    setsockopt(raw_fd_,SOL_SOCKET,SO_BROADCAST,&broadcast,sizeof(broadcast));
+
+    if(flag == ICMP_SEND_BROADCAST)
+    {
+        //set socket for send broadcast
+        int broadcast = 1;
+        setsockopt(raw_fd_,SOL_SOCKET,SO_BROADCAST,&broadcast,sizeof(broadcast));
+//        dst_addr.sin_addr.s_addr = target_ip_.get_ip_broadcast();
+        //TODO : Need to unset sockopt for other function
+    }
 
     struct iphdr * iph = (struct iphdr *)packet;
     calIPChecksum((uint8_t*)iph);
@@ -231,6 +237,7 @@ void IcmpFlood::generate()
 //        memcpy(&iph->saddr,sender_ip_.get_ip_ptr(),4);
 //        calIPChecksum((uint8_t*)iph);
 //        calICMPChecksum(packet, sizeof(struct iphdr) + sizeof(struct icmphdr) + ICMP_DATA_LEN);
+
     }
 
 }
