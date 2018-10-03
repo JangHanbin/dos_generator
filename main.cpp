@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     icmpFlood.init_iph(icmpFlood.sender_ip_,icmpFlood.target_ip_,IPPROTO_ICMP);
     icmpFlood.init_icmph();
 
-//    icmpFlood.generate();
+    icmpFlood.generate(ICMP_SEND_BROADCAST,'c');
 
     /* Syn Flooding example
     SynFlood synFlood;

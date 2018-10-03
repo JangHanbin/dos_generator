@@ -65,7 +65,8 @@ class IcmpFlood : public DosGenerator {
 public :
     bool init_icmph();
     uint8_t data[ICMP_DATA_LEN];
-    virtual void generate(int flag);
+    //if
+    virtual void generate(int flag, char network_class = 0);
 
 };
 #endif // DOSGENERATOR_H
