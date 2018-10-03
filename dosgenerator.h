@@ -8,6 +8,7 @@
 #include "jpcap/ip.h"
 
 #define ICMP_DATA_LEN 1400
+#define ICMP_SEND_UNICAST 0
 #define ICMP_SEND_BROADCAST 1
 
 class DosGenerator

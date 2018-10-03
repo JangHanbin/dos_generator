@@ -14,18 +14,22 @@ int main(int argc, char* argv[])
 
     if(argc != 3) usage();
 
+    /* ICMP Flooding example
     IcmpFlood icmpFlood;
 
 
     icmpFlood.raw_init(IPPROTO_RAW);
 
     icmpFlood.target_ip_= argv[2];
-//    icmpFlood.sender_ip_ = "192.168.0.7";
+
 
     icmpFlood.init_iph(icmpFlood.sender_ip_,icmpFlood.target_ip_,IPPROTO_ICMP);
     icmpFlood.init_icmph();
 
-    icmpFlood.generate(ICMP_SEND_BROADCAST,'c');
+    //if want to ICMP_SEND_BROADCAST must be set class.
+    icmpFlood.generate(ICMP_SEND_BROADCAST, 'c');
+//    icmpFlood.generate(ICMP_SEND_UNICAST);
+    */
 
     /* Syn Flooding example
     SynFlood synFlood;
