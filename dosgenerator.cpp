@@ -160,7 +160,6 @@ void SynFlood::generate()
 
     while(power_)
     {
-                    printByHexData(packet,sizeof(packet));
         //infinity send until power off
         if(sendto(raw_fd_,packet,sizeof(packet),MSG_EOR,(struct sockaddr *)&dst_addr,(socklen_t)sizeof(dst_addr))<0)
         {
